@@ -13,15 +13,19 @@
 #include <utility>
 #include <SFML/Graphics.hpp>
 #include "CField.hpp"
+#include "Config.hpp"
+#include "CGraphInterFace.hpp"
+#include "CFoodBoard.hpp"
+#include "CBrain.hpp"
 
 class CPlayer
 {
 public:
-    CPlayer(std::pair<int, int> coordinates, int speed = 8);
+    CPlayer(const CField& field, std::pair<int, int> coordinates, int speed = 8);
     void move();
     std::pair<int, int> get_position() const;
     const sf::Sprite& getSprite();
-    void move(const CField& field);
+    void move(const CField& field, bool isBrainActive);
     void updateDirection(int dx, int dy);
     void setNewPosition(std::pair<int, int> coordinates);
     std::pair<int, int> getCoordinates();
@@ -35,6 +39,7 @@ private:
     int m_dy;
     sf::Sprite m_PacManSprite;
     sf::Texture m_PacManTexture;
+    CBrain m_Brain;
 };
 
 

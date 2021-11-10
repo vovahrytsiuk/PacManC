@@ -21,7 +21,7 @@ const std::string kUCSName = "UCS";
 
 
 
-CGame::CGame(sf::RenderWindow& window) : m_Menu(CMenu(NSConfig::kMenuItems)), m_Window(window), m_IsGameOver(false), m_Field(NSConfig::kColumnNumber, NSConfig::kRowNumber), m_PacMan(m_Field.getRandomPosition()), m_Wall(CWall()), m_FoodBoard(m_Field), m_Graph(m_Field), m_Algorithm(kBFS)
+CGame::CGame(sf::RenderWindow& window) : m_Menu(CMenu(NSConfig::kMenuItems)), m_Window(window), m_IsGameOver(false), m_Field(NSConfig::kColumnNumber, NSConfig::kRowNumber), m_PacMan(m_Field, m_Field.getRandomPosition()), m_Wall(CWall()), m_FoodBoard(m_Field), m_Graph(m_Field), m_Algorithm(kBFS)
 {
     m_SpiritList.push_back(CSpirit(m_Field.getRandomPosition()));
     //m_SpiritList.push_back(CSpirit(m_Field.getRandomPosition()));
@@ -42,10 +42,6 @@ void CGame::processEvents()
     sf::Event event;
     while (m_Window.pollEvent(event))
     {
-        if (event.type == sf::Event::Closed)
-        {
-            m_Window.close();
-        }
         switch (event.type) {
             case sf::Event::Closed:
                 m_Window.close();
@@ -90,20 +86,24 @@ void CGame::processKeyPressed(const sf::Event& event)
                 m_IsGameOver = true;
                 break;
             case sf::Keyboard::Down:
-                // move player
-                m_PacMan.updateDirection(0, 1);
+                if (NSConfig::kAutoPlayed == false)
+                    // move player
+                    m_PacMan.updateDirection(0, 1);
                 break;
             case sf::Keyboard::Up:
-                // move player
-                m_PacMan.updateDirection(0, -1);
+                if (NSConfig::kAutoPlayed == false)
+                    // move player
+                    m_PacMan.updateDirection(0, -1);
                 break;
             case sf::Keyboard::Right:
-                //move player
-                m_PacMan.updateDirection(1, 0);
+                if (NSConfig::kAutoPlayed == false)
+                    //move player
+                    m_PacMan.updateDirection(1, 0);
                 break;
             case sf::Keyboard::Left:
-                //move player
-                m_PacMan.updateDirection(-1, 0);
+                if (NSConfig::kAutoPlayed == false)
+                    //move player
+                    m_PacMan.updateDirection(-1, 0);
                 break;
             case sf::Keyboard::Z:
                 switchAlgorithm();
@@ -178,7 +178,7 @@ void CGame::drawSpirits()
 
 void CGame::gameLogic()
 {
-    m_PacMan.move(m_Field);
+    m_PacMan.move(m_Field, NSConfig::kAutoPlayed);
     for (size_t i = 0; i < m_SpiritList.size(); i++)
     {
         m_SpiritList[i].move(m_Field);

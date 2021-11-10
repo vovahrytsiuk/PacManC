@@ -29,6 +29,7 @@ namespace NSConfig
     extern const std::string kWallTexturePath;
     extern const std::string kPacManWalkTexturePath;
     extern const std::string kSpiritTexturePath;
+    extern const bool kAutoPlayed;
 }
 
 #endif /* Config_h */

@@ -11,6 +11,9 @@
 #include <list>
 #include <queue>
 #include <iostream>
+#include <cmath>
+#include <set>
+#include <stack>
 
 namespace {
     std::vector<std::pair<int, int> > kNeibours
@@ -205,4 +208,272 @@ int CGraph::getVertex(const int row, const int column)
 std::vector<std::pair<int, int> > CGraph::getNodes() const
 {
     return m_Nodes;
+}
+
+bool CGraph::isValidPosition(const int row, const int column)
+{
+    return (row >= 0) && (row < NSConfig::kRowNumber) && (column >= 0) && (column < NSConfig::kColumnNumber);
+}
+
+bool CGraph::isBlocked(const CField& field, const int row, const int column)
+{
+    return field.verifyBlockType(row, column, NSConfig::kWall);
+}
+
+bool CGraph::isDestination(const int row, const int column, const std::pair<int, int> goal)
+{
+    return (row == goal.first && column == goal.second);
+}
+
+double CGraph::calculateHCost(const int row, const int column, const std::pair<int, int> goal)
+{
+    return (double)sqrt((row - goal.first) * (row - goal.first) +
+                        (column - goal.second) * (column - goal.second));
+}
+
+std::vector<std::pair<int, int> > CGraph::aStarSearch(const int startRow, const int startColumn, const int finishRow, const int finishColumn, const CField& field)
+{
+    if (isValidPosition(startRow, startColumn) == false)
+    {
+        std::cout << "Failed validation of start position" << std::endl;
+        return{};
+    }
+    
+    if (isValidPosition(finishRow, finishColumn) == false)
+    {
+        std::cout << "Failed validation of finish position" << std::endl;
+        return {};
+    }
+    
+    if (isBlocked(field, startRow, startColumn) == true || isBlocked(field, finishRow, finishColumn))
+    {
+        std::cout << "Start or finish position is wall" << std::endl;
+        return {};
+    }
+    
+    if (isDestination(startRow, startColumn, std::make_pair(finishRow, finishColumn)))
+    {
+        std::cout << "We already on finish position" << std::endl;
+        return {};
+    }
+    
+    std::vector<std::vector<bool> > closedList;
+    for (size_t r = 0; r < NSConfig::kRowNumber; r++)
+    {
+        closedList.push_back({});
+        for (size_t c = 0; c < NSConfig::kColumnNumber; c++)
+        {
+            closedList[r].push_back(false);
+        }
+    }
+    
+    std::vector<std::vector<cell> > cellDetails;
+    size_t r, c;
+    for (r = 0; r < NSConfig::kRowNumber; r++)
+    {
+        cellDetails.push_back({});
+        for (c = 0; c < NSConfig::kColumnNumber; c++)
+        {
+            cellDetails[r].push_back({});
+            cellDetails[r][c].f = __FLT_MAX__;
+            cellDetails[r][c].h = __FLT_MAX__;
+            cellDetails[r][c].g = __FLT_MAX__;
+            cellDetails[r][c].parent_row = -1;
+            cellDetails[r][c].parent_column = -1;
+        }
+    }
+    // for starting node
+    r = startRow;
+    c = startColumn;
+    cellDetails[r][c].f = 0.0;
+    cellDetails[r][c].g = 0.0;
+    cellDetails[r][c].h = 0.0;
+    cellDetails[r][c].parent_row = r;
+    cellDetails[r][c].parent_column = c;
+    
+    std::set<posWithValue> openList;
+    openList.insert(std::make_pair(0.0, std::make_pair(r, c)));
+    bool goalFound = false;
+    int nr, nc;
+    double ng, nh, nf;
+    while (openList.empty() == false)
+    {
+        posWithValue p = *openList.begin();
+        openList.erase(openList.begin());
+        r = p.second.first;
+        c = p.second.second;
+        closedList[r][c] = true;
+        
+        // process neibours
+        // up
+        nr = r - 1;
+        nc = c;
+        normalizePosition(nr, nc);
+        if (isValidPosition(nr, nc) == true)
+        {
+            if (isDestination(nr, nc, std::make_pair(finishRow, finishColumn)) == true)
+            {
+                cellDetails[nr][nc].parent_row = r;
+                cellDetails[nr][nc].parent_column = c;
+                goalFound = true;
+                // put here path tracing
+                return tracePath(cellDetails, finishRow, finishColumn);
+            }
+            else if (closedList[nr][nc] == false && (isBlocked(field, nr, nc) == false))
+            {
+                ng = cellDetails[r][c].g + 1.0;
+                nh = calculateHCost(nr, nc, std::make_pair(finishRow, finishColumn));
+                nf = ng + nh;
+                if (cellDetails[nr][nc].f == __FLT_MAX__ || cellDetails[nr][nc].f > nf)
+                {
+                    openList.insert(std::make_pair(nf, std::make_pair(nr, nc)));
+                    cellDetails[nr][nc].parent_row = r;
+                    cellDetails[nr][nc].parent_column = c;
+                    cellDetails[nr][nc].f = nf;
+                    cellDetails[nr][nc].g = ng;
+                    cellDetails[nr][nc].h = nh;
+                }
+            }
+        }
+        // down
+        nr = r + 1;
+        nc = c;
+        normalizePosition(nr, nc);
+        if (isValidPosition(nr, nc) == true)
+        {
+            if (isDestination(nr, nc, std::make_pair(finishRow, finishColumn)) == true)
+            {
+                cellDetails[nr][nc].parent_row = r;
+                cellDetails[nr][nc].parent_column = c;
+                goalFound = true;
+                // put here path tracing
+                return tracePath(cellDetails, finishRow, finishColumn);
+            }
+            else if (closedList[nr][nc] == false && (isBlocked(field, nr, nc) == false))
+            {
+                ng = cellDetails[r][c].g + 1.0;
+                nh = calculateHCost(nr, nc, std::make_pair(finishRow, finishColumn));
+                nf = ng + nh;
+                if (cellDetails[nr][nc].f == __FLT_MAX__ || cellDetails[nr][nc].f > nf)
+                {
+                    openList.insert(std::make_pair(nf, std::make_pair(nr, nc)));
+                    cellDetails[nr][nc].parent_row = r;
+                    cellDetails[nr][nc].parent_column = c;
+                    cellDetails[nr][nc].f = nf;
+                    cellDetails[nr][nc].g = ng;
+                    cellDetails[nr][nc].h = nh;
+                }
+            }
+        }
+        // right
+        nr = r;
+        nc = c + 1;
+        normalizePosition(nr, nc);
+        if (isValidPosition(nr, nc) == true)
+        {
+            if (isDestination(nr, nc, std::make_pair(finishRow, finishColumn)) == true)
+            {
+                cellDetails[nr][nc].parent_row = r;
+                cellDetails[nr][nc].parent_column = c;
+                goalFound = true;
+                // put here path tracing
+                return tracePath(cellDetails, finishRow, finishColumn);
+            }
+            else if (closedList[nr][nc] == false && (isBlocked(field, nr, nc) == false))
+            {
+                ng = cellDetails[r][c].g + 1.0;
+                nh = calculateHCost(nr, nc, std::make_pair(finishRow, finishColumn));
+                nf = ng + nh;
+                if (cellDetails[nr][nc].f == __FLT_MAX__ || cellDetails[nr][nc].f > nf)
+                {
+                    openList.insert(std::make_pair(nf, std::make_pair(nr, nc)));
+                    cellDetails[nr][nc].parent_row = r;
+                    cellDetails[nr][nc].parent_column = c;
+                    cellDetails[nr][nc].f = nf;
+                    cellDetails[nr][nc].g = ng;
+                    cellDetails[nr][nc].h = nh;
+                }
+            }
+        }
+        // left
+        nr = r;
+        nc = c - 1;
+        normalizePosition(nr, nc);
+        if (isValidPosition(nr, nc) == true)
+        {
+            if (isDestination(nr, nc, std::make_pair(finishRow, finishColumn)) == true)
+            {
+                cellDetails[nr][nc].parent_row = r;
+                cellDetails[nr][nc].parent_column = c;
+                goalFound = true;
+                // put here path tracing
+                return tracePath(cellDetails, finishRow, finishColumn);
+            }
+            else if (closedList[nr][nc] == false && (isBlocked(field, nr, nc) == false))
+            {
+                ng = cellDetails[r][c].g + 1.0;
+                nh = calculateHCost(nr, nc, std::make_pair(finishRow, finishColumn));
+                nf = ng + nh;
+                if (cellDetails[nr][nc].f == __FLT_MAX__ || cellDetails[nr][nc].f > nf)
+                {
+                    openList.insert(std::make_pair(nf, std::make_pair(nr, nc)));
+                    cellDetails[nr][nc].parent_row = r;
+                    cellDetails[nr][nc].parent_column = c;
+                    cellDetails[nr][nc].f = nf;
+                    cellDetails[nr][nc].g = ng;
+                    cellDetails[nr][nc].h = nh;
+                }
+            }
+        }
+        return tracePath(cellDetails, finishRow, finishColumn);
+        
+    }
+}
+
+
+void CGraph::normalizePosition(int& row, int& column)
+{
+    if (row < 0)
+    {
+        row = NSConfig::kRowNumber - 1;
+    }
+    else if (row >= NSConfig::kRowNumber)
+    {
+        row = 0;
+    }
+    if (column < 0)
+    {
+        column = NSConfig::kColumnNumber - 1;
+    }
+    else if (column >= NSConfig::kColumnNumber)
+    {
+        column = 0;
+    }
+}
+
+
+std::vector<std::pair<int, int> > CGraph::tracePath(std::vector<std::vector<cell> >& cellDetails, const int finishRow, const int finishColumn)
+{
+    std::vector<std::pair<int, int> > path;
+    int row = finishRow;
+    int column = finishColumn;
+    
+    std::stack<std::pair<int, int> > pathStack;
+    while (!(cellDetails[row][column].parent_column == column && cellDetails[row][column].parent_row == row))
+    {
+        pathStack.push(std::make_pair(row, column));
+        int tempRow = cellDetails[row][column].parent_row;
+        int tempColumn = cellDetails[row][column].parent_column;
+        row = tempRow;
+        column = tempColumn;
+    }
+    
+    pathStack.push(std::make_pair(row, column));
+    
+    while (pathStack.empty() == false)
+    {
+        path.push_back(pathStack.top());
+        pathStack.pop();
+    }
+    return path;
 }

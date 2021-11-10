@@ -10,7 +10,7 @@
 #include "Config.hpp"
 #include <iostream>
 
-CPlayer::CPlayer(std::pair<int, int> coordinates, int speed)
+CPlayer::CPlayer(const CField& field, std::pair<int, int> coordinates, int speed): m_Brain(field)
 {
     setNewPosition(coordinates);
     m_speed = speed;
@@ -39,87 +39,94 @@ const sf::Sprite& CPlayer::getSprite()
 }
 
 
-void CPlayer::move(const CField& field)
+void CPlayer::move(const CField& field, bool isBrainActive)
 {
-    int row = (m_y + NSConfig::kBlockSize / 2) / NSConfig::kBlockSize;
-    int column = (m_x + NSConfig::kBlockSize / 2) / NSConfig::kBlockSize;
-//    if (field.verifyBlockType(row, column, NSConfig::kVerticalRoad) == true)
-//    {
-//        m_dx = 0;
-//    }
-//    if (field.verifyBlockType(row, column, NSConfig::kHorisontalRoad) == true)
-//    {
-//        m_dy = 0;
-//    }
-    m_x += m_dx * m_speed;
-    m_y += m_dy * m_speed;
-    if(m_x > NSConfig::kScreenWidth)
+    if (isBrainActive == false)
     {
-        m_x = 0;
-    }
-    if(m_y > NSConfig::kScreenHeight)
-    {
-        m_y = 0;
-    }
-    if(m_x < -NSConfig::kBlockSize)
-    {
-        m_x = NSConfig::kScreenWidth;
-    }
-    if(m_y < -NSConfig::kBlockSize)
-    {
-        m_y = NSConfig::kScreenHeight;
-    }
-    
-    m_PacManSprite.setPosition(m_x, m_y);
-    // check for walls colisions
-    sf::Sprite wall;
-    wall.setTextureRect(sf::IntRect(0, 0, NSConfig::kBlockSize, NSConfig::kBlockSize));
-    int wall_r = row;
-    int wall_c = column - 1;
-    if (field.verifyBlockType(wall_r, wall_c, NSConfig::kWall))
-    {
-        wall.setPosition(float(wall_c) * NSConfig::kBlockSize, float(wall_r) * NSConfig::kBlockSize);
-        if (wall.getGlobalBounds().intersects(m_PacManSprite.getGlobalBounds()))
+        int row = (m_y + NSConfig::kBlockSize / 2) / NSConfig::kBlockSize;
+        int column = (m_x + NSConfig::kBlockSize / 2) / NSConfig::kBlockSize;
+    //    if (field.verifyBlockType(row, column, NSConfig::kVerticalRoad) == true)
+    //    {
+    //        m_dx = 0;
+    //    }
+    //    if (field.verifyBlockType(row, column, NSConfig::kHorisontalRoad) == true)
+    //    {
+    //        m_dy = 0;
+    //    }
+        m_x += m_dx * m_speed;
+        m_y += m_dy * m_speed;
+        if(m_x > NSConfig::kScreenWidth)
         {
-            // colision detected
-            m_x += m_speed;
+            m_x = 0;
+        }
+        if(m_y > NSConfig::kScreenHeight)
+        {
+            m_y = 0;
+        }
+        if(m_x < -NSConfig::kBlockSize)
+        {
+            m_x = NSConfig::kScreenWidth;
+        }
+        if(m_y < -NSConfig::kBlockSize)
+        {
+            m_y = NSConfig::kScreenHeight;
+        }
+        
+        m_PacManSprite.setPosition(m_x, m_y);
+        // check for walls colisions
+        sf::Sprite wall;
+        wall.setTextureRect(sf::IntRect(0, 0, NSConfig::kBlockSize, NSConfig::kBlockSize));
+        int wall_r = row;
+        int wall_c = column - 1;
+        if (field.verifyBlockType(wall_r, wall_c, NSConfig::kWall))
+        {
+            wall.setPosition(float(wall_c) * NSConfig::kBlockSize, float(wall_r) * NSConfig::kBlockSize);
+            if (wall.getGlobalBounds().intersects(m_PacManSprite.getGlobalBounds()))
+            {
+                // colision detected
+                m_x += m_speed;
+            }
+        }
+        ++wall_c;
+        --wall_r;
+        if (field.verifyBlockType(wall_r, wall_c, NSConfig::kWall))
+        {
+            wall.setPosition(float(wall_c) * NSConfig::kBlockSize, float(wall_r) * NSConfig::kBlockSize);
+            if (wall.getGlobalBounds().intersects(m_PacManSprite.getGlobalBounds()))
+            {
+                // colision detected
+                m_y += m_speed;
+            }
+        }
+        ++wall_c;
+        ++wall_r;
+        if (field.verifyBlockType(wall_r, wall_c, NSConfig::kWall))
+        {
+            wall.setPosition(float(wall_c) * NSConfig::kBlockSize, float(wall_r) * NSConfig::kBlockSize);
+            if (wall.getGlobalBounds().intersects(m_PacManSprite.getGlobalBounds()))
+            {
+                // colision detected
+                m_x -= m_speed;
+            }
+        }
+        --wall_c;
+        ++wall_r;
+        if (field.verifyBlockType(wall_r, wall_c, NSConfig::kWall))
+        {
+            wall.setPosition(float(wall_c) * NSConfig::kBlockSize, float(wall_r) * NSConfig::kBlockSize);
+            if (wall.getGlobalBounds().intersects(m_PacManSprite.getGlobalBounds()))
+            {
+                // colision detected
+                m_y -= m_speed;
+            }
         }
     }
-    ++wall_c;
-    --wall_r;
-    if (field.verifyBlockType(wall_r, wall_c, NSConfig::kWall))
+    else
     {
-        wall.setPosition(float(wall_c) * NSConfig::kBlockSize, float(wall_r) * NSConfig::kBlockSize);
-        if (wall.getGlobalBounds().intersects(m_PacManSprite.getGlobalBounds()))
-        {
-            // colision detected
-            m_y += m_speed;
-        }
+        std::pair<int, int> newCoordinates = m_Brain.makeStep(getCoordinates());
+        m_x = NSConfig::kBlockSize * std::get<1>(newCoordinates);
+        m_y = NSConfig::kBlockSize * std::get<0>(newCoordinates);
     }
-    ++wall_c;
-    ++wall_r;
-    if (field.verifyBlockType(wall_r, wall_c, NSConfig::kWall))
-    {
-        wall.setPosition(float(wall_c) * NSConfig::kBlockSize, float(wall_r) * NSConfig::kBlockSize);
-        if (wall.getGlobalBounds().intersects(m_PacManSprite.getGlobalBounds()))
-        {
-            // colision detected
-            m_x -= m_speed;
-        }
-    }
-    --wall_c;
-    ++wall_r;
-    if (field.verifyBlockType(wall_r, wall_c, NSConfig::kWall))
-    {
-        wall.setPosition(float(wall_c) * NSConfig::kBlockSize, float(wall_r) * NSConfig::kBlockSize);
-        if (wall.getGlobalBounds().intersects(m_PacManSprite.getGlobalBounds()))
-        {
-            // colision detected
-            m_y -= m_speed;
-        }
-    }
-    
-    // check for colision
     
     m_PacManSprite.setPosition(m_x, m_y);
 }

@@ -19,10 +19,12 @@ public:
     CFoodBoard(const CField& field);
     int eatFood(std::pair<int, int> coordinates);
     bool isFoodPresent(const int row, const int column);
+    std::pair<int, int> getRandomFood() const;
 private:
     int m_RowNumber;
     int m_ColumnNumber;
-    std::vector<std::vector<bool> > m_Food;
+    //                    row column
+    std::vector<std::pair<int, int> > m_FoodList;
 };
 
 #endif /* CFoodBoard_hpp */

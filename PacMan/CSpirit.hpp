@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <SFML/Graphics.hpp>
 #include "CField.hpp"
+#include "Config.hpp"
 
 class CSpirit
 {
