@@ -21,11 +21,11 @@
 class CPlayer
 {
 public:
-    CPlayer(const CField& field, std::pair<int, int> coordinates, int speed = 8);
+    CPlayer(const CField& field, std::pair<int, int> coordinates, int speed = 64);
     void move();
     std::pair<int, int> get_position() const;
     const sf::Sprite& getSprite();
-    void move(const CField& field, bool isBrainActive);
+    void move(const CField& field);
     void updateDirection(int dx, int dy);
     void setNewPosition(std::pair<int, int> coordinates);
     std::pair<int, int> getCoordinates();

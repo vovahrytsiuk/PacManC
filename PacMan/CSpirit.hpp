@@ -17,7 +17,7 @@
 class CSpirit
 {
 public:
-    CSpirit(std::pair<int, int> coordinates, int speed = 4);
+    CSpirit(std::pair<int, int> coordinates, int speed = 64);
     CSpirit(const CSpirit& right);
     void setNewPosition(std::pair<int, int> coordinates);
     void move(const CField& field);

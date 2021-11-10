@@ -26,6 +26,7 @@ void CPlayer::setNewPosition(std::pair<int, int> coordinates)
 {
     m_y = std::get<0>(coordinates) * NSConfig::kBlockSize;
     m_x = std::get<1>(coordinates) * NSConfig::kBlockSize;
+    m_PacManSprite.setPosition(m_x, m_y);
 }
 
 std::pair<int, int> CPlayer::get_position() const
@@ -39,10 +40,8 @@ const sf::Sprite& CPlayer::getSprite()
 }
 
 
-void CPlayer::move(const CField& field, bool isBrainActive)
+void CPlayer::move(const CField& field)
 {
-    if (isBrainActive == false)
-    {
         int row = (m_y + NSConfig::kBlockSize / 2) / NSConfig::kBlockSize;
         int column = (m_x + NSConfig::kBlockSize / 2) / NSConfig::kBlockSize;
     //    if (field.verifyBlockType(row, column, NSConfig::kVerticalRoad) == true)
@@ -120,13 +119,8 @@ void CPlayer::move(const CField& field, bool isBrainActive)
                 m_y -= m_speed;
             }
         }
-    }
-    else
-    {
-        std::pair<int, int> newCoordinates = m_Brain.makeStep(getCoordinates());
-        m_x = NSConfig::kBlockSize * std::get<1>(newCoordinates);
-        m_y = NSConfig::kBlockSize * std::get<0>(newCoordinates);
-    }
+    
+    
     
     m_PacManSprite.setPosition(m_x, m_y);
 }

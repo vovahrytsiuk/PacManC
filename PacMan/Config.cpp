@@ -27,6 +27,6 @@ namespace NSConfig
     const std::string kSpiritTexturePath = "/Users/vova/Desktop/PacMan/PacManC/PacMan/Resources/spirit.png";
     const int kRowNumber = int(kScreenHeight / kBlockSize);
     const int kColumnNumber = int(kScreenWidth / kBlockSize);
-    const bool kAutoPlayed = false;
+    const bool kAutoPlayed = true;
 }
 

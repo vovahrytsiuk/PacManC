@@ -304,130 +304,45 @@ std::vector<std::pair<int, int> > CGraph::aStarSearch(const int startRow, const 
         c = p.second.second;
         closedList[r][c] = true;
         
+        
+        
         // process neibours
         // up
-        nr = r - 1;
-        nc = c;
-        normalizePosition(nr, nc);
-        if (isValidPosition(nr, nc) == true)
-        {
-            if (isDestination(nr, nc, std::make_pair(finishRow, finishColumn)) == true)
-            {
-                cellDetails[nr][nc].parent_row = r;
-                cellDetails[nr][nc].parent_column = c;
-                goalFound = true;
-                // put here path tracing
-                return tracePath(cellDetails, finishRow, finishColumn);
-            }
-            else if (closedList[nr][nc] == false && (isBlocked(field, nr, nc) == false))
-            {
-                ng = cellDetails[r][c].g + 1.0;
-                nh = calculateHCost(nr, nc, std::make_pair(finishRow, finishColumn));
-                nf = ng + nh;
-                if (cellDetails[nr][nc].f == __FLT_MAX__ || cellDetails[nr][nc].f > nf)
-                {
-                    openList.insert(std::make_pair(nf, std::make_pair(nr, nc)));
-                    cellDetails[nr][nc].parent_row = r;
-                    cellDetails[nr][nc].parent_column = c;
-                    cellDetails[nr][nc].f = nf;
-                    cellDetails[nr][nc].g = ng;
-                    cellDetails[nr][nc].h = nh;
-                }
-            }
-        }
-        // down
-        nr = r + 1;
-        nc = c;
-        normalizePosition(nr, nc);
-        if (isValidPosition(nr, nc) == true)
-        {
-            if (isDestination(nr, nc, std::make_pair(finishRow, finishColumn)) == true)
-            {
-                cellDetails[nr][nc].parent_row = r;
-                cellDetails[nr][nc].parent_column = c;
-                goalFound = true;
-                // put here path tracing
-                return tracePath(cellDetails, finishRow, finishColumn);
-            }
-            else if (closedList[nr][nc] == false && (isBlocked(field, nr, nc) == false))
-            {
-                ng = cellDetails[r][c].g + 1.0;
-                nh = calculateHCost(nr, nc, std::make_pair(finishRow, finishColumn));
-                nf = ng + nh;
-                if (cellDetails[nr][nc].f == __FLT_MAX__ || cellDetails[nr][nc].f > nf)
-                {
-                    openList.insert(std::make_pair(nf, std::make_pair(nr, nc)));
-                    cellDetails[nr][nc].parent_row = r;
-                    cellDetails[nr][nc].parent_column = c;
-                    cellDetails[nr][nc].f = nf;
-                    cellDetails[nr][nc].g = ng;
-                    cellDetails[nr][nc].h = nh;
-                }
-            }
-        }
-        // right
-        nr = r;
-        nc = c + 1;
-        normalizePosition(nr, nc);
-        if (isValidPosition(nr, nc) == true)
-        {
-            if (isDestination(nr, nc, std::make_pair(finishRow, finishColumn)) == true)
-            {
-                cellDetails[nr][nc].parent_row = r;
-                cellDetails[nr][nc].parent_column = c;
-                goalFound = true;
-                // put here path tracing
-                return tracePath(cellDetails, finishRow, finishColumn);
-            }
-            else if (closedList[nr][nc] == false && (isBlocked(field, nr, nc) == false))
-            {
-                ng = cellDetails[r][c].g + 1.0;
-                nh = calculateHCost(nr, nc, std::make_pair(finishRow, finishColumn));
-                nf = ng + nh;
-                if (cellDetails[nr][nc].f == __FLT_MAX__ || cellDetails[nr][nc].f > nf)
-                {
-                    openList.insert(std::make_pair(nf, std::make_pair(nr, nc)));
-                    cellDetails[nr][nc].parent_row = r;
-                    cellDetails[nr][nc].parent_column = c;
-                    cellDetails[nr][nc].f = nf;
-                    cellDetails[nr][nc].g = ng;
-                    cellDetails[nr][nc].h = nh;
-                }
-            }
-        }
-        // left
-        nr = r;
-        nc = c - 1;
-        normalizePosition(nr, nc);
-        if (isValidPosition(nr, nc) == true)
-        {
-            if (isDestination(nr, nc, std::make_pair(finishRow, finishColumn)) == true)
-            {
-                cellDetails[nr][nc].parent_row = r;
-                cellDetails[nr][nc].parent_column = c;
-                goalFound = true;
-                // put here path tracing
-                return tracePath(cellDetails, finishRow, finishColumn);
-            }
-            else if (closedList[nr][nc] == false && (isBlocked(field, nr, nc) == false))
-            {
-                ng = cellDetails[r][c].g + 1.0;
-                nh = calculateHCost(nr, nc, std::make_pair(finishRow, finishColumn));
-                nf = ng + nh;
-                if (cellDetails[nr][nc].f == __FLT_MAX__ || cellDetails[nr][nc].f > nf)
-                {
-                    openList.insert(std::make_pair(nf, std::make_pair(nr, nc)));
-                    cellDetails[nr][nc].parent_row = r;
-                    cellDetails[nr][nc].parent_column = c;
-                    cellDetails[nr][nc].f = nf;
-                    cellDetails[nr][nc].g = ng;
-                    cellDetails[nr][nc].h = nh;
-                }
-            }
-        }
-        return tracePath(cellDetails, finishRow, finishColumn);
         
+        for(const auto& neibour: kNeibours)
+        {
+            int nr = r + std::get<0>(neibour);
+            int nc = c + std::get<1>(neibour);
+            normalizePosition(nr, nc);
+            if (isValidPosition(nr, nc) == true)
+            {
+                if (isDestination(nr, nc, std::make_pair(finishRow, finishColumn)) == true)
+                {
+                    cellDetails[nr][nc].parent_row = r;
+                    cellDetails[nr][nc].parent_column = c;
+                    goalFound = true;
+                    // put here path tracing
+                    return tracePath(cellDetails, finishRow, finishColumn);
+                }
+                else if (closedList[nr][nc] == false && (isBlocked(field, nr, nc) == false))
+                {
+                    ng = cellDetails[r][c].g + 1.0;
+                    nh = calculateHCost(nr, nc, std::make_pair(finishRow, finishColumn));
+                    nf = ng + nh;
+                    if (cellDetails[nr][nc].f == __FLT_MAX__ || cellDetails[nr][nc].f > nf)
+                    {
+                        openList.insert(std::make_pair(nf, std::make_pair(nr, nc)));
+                        cellDetails[nr][nc].parent_row = r;
+                        cellDetails[nr][nc].parent_column = c;
+                        cellDetails[nr][nc].f = nf;
+                        cellDetails[nr][nc].g = ng;
+                        cellDetails[nr][nc].h = nh;
+                    }
+                }
+            }
+        }
     }
+    return {};
 }
 
 

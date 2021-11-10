@@ -154,6 +154,14 @@ void CGame::drawField()
             }
             if (m_FoodBoard.isFoodPresent(row, column))
             {
+                if (row == m_TargetPosition.first && column == m_TargetPosition.second)
+                {
+                    circle.setFillColor(sf::Color::Green);
+                }
+                else
+                {
+                    circle.setFillColor(sf::Color::White);
+                }
                 circle.setPosition(float(column * NSConfig::kBlockSize + offset), float(row * NSConfig::kBlockSize + offset));
                 m_Window.draw(circle);
                 
@@ -178,7 +186,22 @@ void CGame::drawSpirits()
 
 void CGame::gameLogic()
 {
-    m_PacMan.move(m_Field, NSConfig::kAutoPlayed);
+    if (NSConfig::kAutoPlayed == false)
+    {
+        m_PacMan.move(m_Field);
+    }
+    else
+    {
+        if (pathMemory.empty())
+        {
+            std::pair<int, int> playerPos = m_PacMan.getCoordinates();
+            std::pair<int, int> foodPos = m_FoodBoard.getRandomFood();
+            m_TargetPosition = foodPos;
+            pathMemory = m_Graph.aStarSearch(playerPos.first, playerPos.second, foodPos.first, foodPos.second, m_Field);
+        }
+        m_PacMan.setNewPosition(*pathMemory.begin());
+        pathMemory.erase(pathMemory.begin());
+    }
     for (size_t i = 0; i < m_SpiritList.size(); i++)
     {
         m_SpiritList[i].move(m_Field);

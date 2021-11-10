@@ -6,7 +6,7 @@ int main()
 {
     srand(time(0));
     sf::RenderWindow window(sf::VideoMode(NSConfig::kScreenWidth, NSConfig::kScreenHeight), NSConfig::kTitle);
-    window.setFramerateLimit(30);
+    window.setFramerateLimit(4);
     sf::CircleShape shape(100.f);
     shape.setFillColor(sf::Color::Green);
     CGame game(window);

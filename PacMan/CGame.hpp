@@ -54,6 +54,8 @@ private:
     CFoodBoard m_FoodBoard;
     CGraph m_Graph;
     int m_Algorithm;
+    std::vector<std::pair<int, int> > pathMemory;
+    std::pair<int, int> m_TargetPosition;
 };
 
 #endif /* CGame_hpp */
